@@ -1,5 +1,5 @@
-import { Component } from "@angular/core";
-import { CommonModule } from '@angular/common';
+import { Component, Inject, NgZone, OnInit, PLATFORM_ID } from "@angular/core";
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SocketService } from "../../services/socket.service";
 
@@ -10,9 +10,10 @@ import { SocketService } from "../../services/socket.service";
     imports: [CommonModule, FormsModule]
 })
 
-export class ParticipantComponent {
+export class ParticipantComponent implements OnInit {
     watchId: number | null = null;
-    participantId = crypto.randomUUID();
+    participantId = '';
+    private isBrowser = false;
 
     participantData = {
         tecnologico: '',
@@ -20,54 +21,155 @@ export class ParticipantComponent {
         telefono: ''
     };
 
-    constructor(private SocketService: SocketService) { }
+    // UI state
+    status: 'idle' | 'sharing' | 'stopped' | 'denied' | 'reconnecting' | 'error' = 'idle';
+    lastPosition: { lat: number; lng: number; at: string } | null = null;
+    reconnectAttempts = 0;
+
+    constructor(
+        private SocketService: SocketService,
+        private ngZone: NgZone,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) {
+        this.isBrowser = isPlatformBrowser(this.platformId);
+    }
+
+    ngOnInit(): void {
+        if (this.isBrowser) {
+            const savedId = localStorage.getItem('participantId');
+            this.participantId = savedId || this.safeUuid();
+
+            // load saved data if present
+            const saved = localStorage.getItem('participantData');
+            if (saved) {
+                try {
+                    this.participantData = JSON.parse(saved);
+                } catch (e) {
+                    // ignore
+                }
+            }
+        } else {
+            this.participantId = 'server';
+            return;
+        }
+
+        // react to socket connect/disconnect for reconnection behavior
+        this.SocketService.listen('connect', () => {
+            // if we were sharing, re-join and resume
+            if (this.status === 'reconnecting' || this.status === 'sharing') {
+                this.reconnectAttempts = 0;
+                this.SocketService.emit('participant:join', { id: this.participantId, ...this.participantData });
+                if (this.watchId === null) {
+                    // attempt to restart geolocation
+                    this.startGeolocationWatch();
+                }
+                this.ngZone.run(() => this.status = 'sharing');
+            }
+        });
+
+        this.SocketService.listen('disconnect', () => {
+            if (this.watchId !== null) {
+                this.ngZone.run(() => this.status = 'reconnecting');
+                this.reconnectAttempts++;
+            }
+        });
+    }
 
     // GUARDAR DATOS
     saveData() {
+        if (!this.isBrowser) return;
         localStorage.setItem('participantData', JSON.stringify(this.participantData));
-        localStorage.setItem('participantId', this.participantId);
-
-
-        alert('Datos guardados');
+        localStorage.setItem('participantId', String(this.participantId));
+        this.ngZone.run(() => alert('Datos guardados'));
     }
 
-    // ACTIVAR UBICACION
-    startSharing() {
-        this.SocketService.emit('participant:join', {
-            id: this.participantId,
-            ...this.participantData
-        });
+    // Public: iniciar compartir (maneja permisos y reconexión)
+    async startSharing() {
+        if (!this.isBrowser) return;
+        // check geolocation permission if available
+        try {
+            if ((navigator as any).permissions && (navigator as any).permissions.query) {
+                const perm = await (navigator as any).permissions.query({ name: 'geolocation' });
+                if (perm.state === 'denied') {
+                    this.status = 'denied';
+                    return;
+                }
+            }
+        } catch (e) {
+            // ignore permission query errors
+        }
 
-        this.watchId = navigator.geolocation.watchPosition((position) => {
-            const payload = {
-                id: this.participantId,
-                ...this.participantData,
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            };
+        // emit join and start watching
+        this.SocketService.emit('participant:join', { id: this.participantId, ...this.participantData });
+        this.startGeolocationWatch();
+        this.status = 'sharing';
+    }
 
-            this.SocketService.emit('location:update', payload);
-        },
-            (error) =>{
-                console.error(error);
+    private startGeolocationWatch(){
+        if (!this.isBrowser) return;
+        if (!('geolocation' in navigator)) {
+            this.status = 'error';
+            return;
+        }
+
+        // already watching
+        if (this.watchId !== null) return;
+
+        this.watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                const payload = {
+                    id: this.participantId,
+                    ...this.participantData,
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                // send via socket
+                this.SocketService.emit('location:update', payload);
+
+                this.ngZone.run(() => {
+                    this.lastPosition = { lat: payload.lat, lng: payload.lng, at: new Date().toLocaleTimeString() };
+                    this.status = 'sharing';
+                });
             },
-
+            (error) =>{
+                console.error('Geolocation error', error);
+                this.ngZone.run(() => {
+                    const wasSharing = this.status === 'sharing';
+                    if (error.code === error.PERMISSION_DENIED) {
+                        this.status = 'denied';
+                    } else {
+                        this.status = 'error';
+                        // schedule retry if we were sharing before the error
+                        if (wasSharing) {
+                            setTimeout(() => this.startGeolocationWatch(), 3000);
+                        }
+                    }
+                });
+            },
             {
-                enableHighAccuracy: true
+                enableHighAccuracy: true,
+                maximumAge: 10000,
+                timeout: 10000
             }
         );
     }
 
     // DETENER UBICACION
     stopSharing(){
+        if (!this.isBrowser) return;
         if(this.watchId !== null){
-            navigator.geolocation.clearWatch(
-                this.watchId
-            );
-
+            navigator.geolocation.clearWatch(this.watchId);
             this.watchId = null;
-
             this.SocketService.emit('location:stop', this.participantId);
         }
+        this.status = 'stopped';
+    }
+
+    private safeUuid(){
+        if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+            return crypto.randomUUID();
+        }
+        return `p-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 }

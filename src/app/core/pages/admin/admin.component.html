@@ -1,5 +1,6 @@
 <div class="admin-panel">
   <h2>Panel Admin</h2>
+  <p>Da clic en un marker para ver su trayectoria registrada en esta sesión.</p>
   <div #mapContainer id="admin-map" style="height:60vh;width:100%;margin-bottom:1rem;border:1px solid #ddd;"></div>
   <ng-container *ngIf="(participants || {}) | keyvalue as entries">
     <p *ngIf="!entries.length">No hay participantes activos</p>

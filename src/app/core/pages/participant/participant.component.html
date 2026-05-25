@@ -1,5 +1,16 @@
 <div class="participant-form">
   <h2>Participante</h2>
+  <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:8px;">
+    <div [ngClass]="{
+      'bg-gray-200': status==='idle',
+      'bg-green-300': status==='sharing',
+      'bg-yellow-300': status==='reconnecting',
+      'bg-red-300': status==='denied' || status==='error',
+      'bg-blue-200': status==='stopped'
+    }" style="padding:6px 10px;border-radius:999px;font-weight:600;">Estado: {{ status }}</div>
+    <div *ngIf="lastPosition">Última ubicación: {{ lastPosition.lat }} , {{ lastPosition.lng }} ({{ lastPosition.at }})</div>
+    <div *ngIf="reconnectAttempts">Reintentos socket: {{ reconnectAttempts }}</div>
+  </div>
   <label>
     Tecnológico
     <input [(ngModel)]="participantData.tecnologico" />
@@ -13,9 +24,10 @@
     <input [(ngModel)]="participantData.telefono" />
   </label>
 
-  <div style="margin-top:12px">
+  <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
     <button (click)="saveData()">Guardar datos</button>
-    <button (click)="startSharing()">Iniciar compartir ubicación</button>
-    <button (click)="stopSharing()">Detener compartir</button>
+    <button (click)="startSharing()" [disabled]="status==='sharing' || status==='reconnecting'">Iniciar compartir ubicación</button>
+    <button (click)="stopSharing()" [disabled]="status!=='sharing'">Detener compartir</button>
+    <button *ngIf="status==='denied'" (click)="startSharing()">Reintentar permisos</button>
   </div>
 </div>
