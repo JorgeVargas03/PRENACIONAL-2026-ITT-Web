@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from "@angular/core";
+import { AfterViewInit, ApplicationRef, ChangeDetectorRef, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from "@angular/core";
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { SocketService } from "../../services/socket.service";
@@ -22,11 +22,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     private trails: Record<string, Array<[number, number]>> = {};
     private polylines: Record<string, any> = {};
     private activeTrailId: string | null = null;
+    private hasAutoCentered = false;
 
     constructor(
         private socketService: SocketService,
         private ngZone: NgZone,
         private cdr: ChangeDetectorRef,
+        private appRef: ApplicationRef,
         @Inject(PLATFORM_ID) private platformId: Object
     ) { }
 
@@ -47,7 +49,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         // use divIcon to avoid external image requests for default markers
 
         // initialize Leaflet map
-        this.map = L.map(this.mapContainer.nativeElement).setView([0, 0], 2);
+        // start centered on Mexico
+        this.map = L.map(this.mapContainer.nativeElement).setView([23.6345, -102.5528], 5);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
@@ -58,9 +61,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
             this.ngZone.run(() => {
                 this.participants = data || {};
                 this.syncMarkersWithParticipants();
-                this.updateBounds();
                 this.updateParticipantCounters();
+                if (!this.hasAutoCentered && this.participantsCount > 0) {
+                    this.updateBounds(true);
+                    this.hasAutoCentered = true;
+                }
                 this.cdr.detectChanges();
+                this.appRef.tick();
             });
         });
 
@@ -76,9 +83,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
                 if (this.activeTrailId === participant.id) {
                     this.renderTrail(participant.id);
                 }
-                this.updateBounds();
                 this.updateParticipantCounters();
+                if (!this.hasAutoCentered && this.participantsCount > 0) {
+                    this.updateBounds(true);
+                    this.hasAutoCentered = true;
+                }
                 this.cdr.detectChanges();
+                this.appRef.tick();
             });
         });
 
@@ -90,9 +101,9 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.participants = next;
                 this.removeMarker(id);
                 this.clearTrail(id);
-                this.updateBounds();
                 this.updateParticipantCounters();
                 this.cdr.detectChanges();
+                this.appRef.tick();
             });
         });
     }
@@ -214,10 +225,16 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.activeTrailId === id) this.activeTrailId = null;
     }
 
-    private updateBounds(){
+    recenterMap(){
+        this.updateBounds(true);
+    }
+
+    private updateBounds(force = false){
         if(!this.map || !this.L) return;
         const ids = Object.keys(this.markers);
         if (ids.length === 0) return;
+
+        if (!force) return;
 
         if (ids.length === 1) {
             const marker = this.markers[ids[0]];
