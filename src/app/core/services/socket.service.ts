@@ -10,11 +10,13 @@ export class SocketService {
 
     private socket?: Socket;
     private isBrowser: boolean;
+    private API_URL: string = 'https://prenacional-2026-itt-api.onrender.com';
+    //private API_URL: string = 'http://localhost:3000';
 
     constructor(@Inject(PLATFORM_ID) platformId: Object) {
         this.isBrowser = isPlatformBrowser(platformId);
         if (this.isBrowser) {
-            this.socket = io('http://localhost:3000');
+            this.socket = io(this.API_URL);
         }
     }
 

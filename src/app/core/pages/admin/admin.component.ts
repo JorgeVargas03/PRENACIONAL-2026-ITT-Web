@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Inject, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from "@angular/core";
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from "@angular/core";
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { SocketService } from "../../services/socket.service";
@@ -14,6 +14,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef<HTMLDivElement>;
 
     participants: any = {};
+    participantsList: any[] = [];
+    participantsCount = 0;
     private L: any;
     private map?: any;
     private markers: Record<string, any> = {};
@@ -21,7 +23,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     private polylines: Record<string, any> = {};
     private activeTrailId: string | null = null;
 
-    constructor(private socketService: SocketService, @Inject(PLATFORM_ID) private platformId: Object) { }
+    constructor(
+        private socketService: SocketService,
+        private ngZone: NgZone,
+        private cdr: ChangeDetectorRef,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) { }
 
     ngOnInit(): void {
         // Enter admin room early
@@ -47,28 +54,45 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // initial list
         this.socketService.listen('participant:list', (data: any) => {
-            this.participants = data || {};
-            this.syncMarkersWithParticipants();
-            this.updateBounds();
+            this.ngZone.run(() => {
+                this.participants = data || {};
+                this.syncMarkersWithParticipants();
+                this.updateBounds();
+                this.updateParticipantCounters();
+                this.cdr.detectChanges();
+            });
         });
 
         // real-time update
         this.socketService.listen('participant:updated', (participant: any) => {
-            this.participants[participant.id] = participant;
-            this.upsertMarker(participant);
-            this.appendTrailPoint(participant);
-            if (this.activeTrailId === participant.id) {
-                this.renderTrail(participant.id);
-            }
-            this.updateBounds();
+            this.ngZone.run(() => {
+                this.participants = {
+                    ...this.participants,
+                    [participant.id]: participant
+                };
+                this.upsertMarker(participant);
+                this.appendTrailPoint(participant);
+                if (this.activeTrailId === participant.id) {
+                    this.renderTrail(participant.id);
+                }
+                this.updateBounds();
+                this.updateParticipantCounters();
+                this.cdr.detectChanges();
+            });
         });
 
         // participant removed
         this.socketService.listen('participant:removed', (id: string)=>{
-            delete this.participants[id];
-            this.removeMarker(id);
-            this.clearTrail(id);
-            this.updateBounds();
+            this.ngZone.run(() => {
+                const next = { ...this.participants };
+                delete next[id];
+                this.participants = next;
+                this.removeMarker(id);
+                this.clearTrail(id);
+                this.updateBounds();
+                this.updateParticipantCounters();
+                this.cdr.detectChanges();
+            });
         });
     }
 
@@ -100,6 +124,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
             marker.addTo(this.map);
             this.markers[participant.id] = marker;
         }
+        this.updateParticipantCounters();
+        this.cdr.detectChanges();
     }
 
     private buildMarkerIcon(participant: any){
@@ -140,6 +166,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
             m.remove();
             delete this.markers[id];
         }
+        this.updateParticipantCounters();
+        this.cdr.detectChanges();
     }
 
     private appendTrailPoint(participant: any){
@@ -212,5 +240,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         for(const id of Object.keys(this.markers)){
             if(!this.participants[id]) this.removeMarker(id);
         }
+        this.updateParticipantCounters();
+    }
+
+    private updateParticipantCounters(){
+        this.participantsList = Object.values(this.participants || {});
+        const fromParticipants = this.participantsList.length;
+        const fromMarkers = Object.keys(this.markers).length;
+        this.participantsCount = Math.max(fromParticipants, fromMarkers);
     }
 }
