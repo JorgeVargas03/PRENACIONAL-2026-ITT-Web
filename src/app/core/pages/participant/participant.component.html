@@ -1,33 +1,131 @@
-<div class="participant-form">
-  <h2>Participante</h2>
-  <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:8px;">
-    <div [ngClass]="{
-      'bg-gray-200': status==='idle',
-      'bg-green-300': status==='sharing',
-      'bg-yellow-300': status==='reconnecting',
-      'bg-red-300': status==='denied' || status==='error',
-      'bg-blue-200': status==='stopped'
-    }" style="padding:6px 10px;border-radius:999px;font-weight:600;">Estado: {{ status }}</div>
-    <div *ngIf="lastPosition">Última ubicación: {{ lastPosition.lat }} , {{ lastPosition.lng }} ({{ lastPosition.at }})</div>
-    <div *ngIf="reconnectAttempts">Reintentos socket: {{ reconnectAttempts }}</div>
-  </div>
-  <label>
-    Tecnológico
-    <input [(ngModel)]="participantData.tecnologico" />
-  </label>
-  <label>
-    Encargado
-    <input [(ngModel)]="participantData.encargado" />
-  </label>
-  <label>
-    Teléfono
-    <input [(ngModel)]="participantData.telefono" />
-  </label>
+<div class="min-h-screen bg-slate-950 text-slate-100 font-['Plus_Jakarta_Sans']">
+  <div class="relative overflow-hidden">
+    <div class="absolute -top-40 right-0 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"></div>
+    <div class="absolute -bottom-40 left-0 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl"></div>
 
-  <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
-    <button (click)="saveData()">Guardar datos</button>
-    <button (click)="startSharing()" [disabled]="status==='sharing' || status==='reconnecting'">Iniciar compartir ubicación</button>
-    <button (click)="stopSharing()" [disabled]="status!=='sharing'">Detener compartir</button>
-    <button *ngIf="status==='denied'" (click)="startSharing()">Reintentar permisos</button>
+    <div class="relative mx-auto max-w-5xl px-5 py-8 sm:px-6 lg:px-8">
+      <header class="flex flex-col gap-5 border-b border-white/10 pb-6 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-xs uppercase tracking-[0.35em] text-emerald-300/80">Modo Participante</p>
+          <h1 class="mt-2 text-3xl font-semibold text-white font-['Space_Grotesk'] sm:text-4xl">Compartir Ubicacion</h1>
+          <p class="mt-2 text-sm text-slate-300">Registra tus datos y controla cuando enviar tu ubicacion en tiempo real.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <div class="text-xs uppercase tracking-wider text-slate-400">ID</div>
+            <div class="mt-1 truncate text-sm font-semibold text-white">{{ participantId }}</div>
+          </div>
+          <div
+            [ngClass]="{
+              'bg-slate-200/90 text-slate-900': status==='idle',
+              'bg-emerald-300/90 text-emerald-900': status==='sharing',
+              'bg-amber-300/90 text-amber-900': status==='reconnecting',
+              'bg-rose-300/90 text-rose-900': status==='denied' || status==='error',
+              'bg-sky-300/90 text-sky-900': status==='stopped'
+            }"
+            class="rounded-2xl px-4 py-3 text-sm font-semibold"
+          >
+            Estado: {{ status }}
+          </div>
+        </div>
+      </header>
+
+      <div class="mt-6 grid gap-6 lg:grid-cols-12">
+        <section class="lg:col-span-7">
+          <div class="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-[0_20px_60px_-35px_rgba(0,0,0,0.9)]">
+            <h2 class="text-lg font-semibold text-white">Datos del participante</h2>
+            <p class="mt-1 text-xs text-slate-400">Se guardan en este dispositivo.</p>
+
+            <div class="mt-5 grid gap-4">
+              <label class="text-xs uppercase tracking-wider text-slate-400">
+                Tecnologico
+                <input
+                  [(ngModel)]="participantData.tecnologico"
+                  class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/50 focus:ring-2 focus:ring-emerald-300/30"
+                  placeholder="Nombre del tecnologico"
+                />
+              </label>
+              <label class="text-xs uppercase tracking-wider text-slate-400">
+                Encargado
+                <input
+                  [(ngModel)]="participantData.encargado"
+                  class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/50 focus:ring-2 focus:ring-emerald-300/30"
+                  placeholder="Nombre del encargado"
+                />
+              </label>
+              <label class="text-xs uppercase tracking-wider text-slate-400">
+                Telefono
+                <input
+                  [(ngModel)]="participantData.telefono"
+                  class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/50 focus:ring-2 focus:ring-emerald-300/30"
+                  placeholder="Numero de contacto"
+                />
+              </label>
+            </div>
+
+            <div class="mt-6 flex flex-wrap gap-3">
+              <button
+                (click)="saveData()"
+                class="rounded-full border border-white/10 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+              >
+                Guardar datos
+              </button>
+              <button
+                (click)="startSharing()"
+                [disabled]="status==='sharing' || status==='reconnecting'"
+                class="rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-emerald-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-emerald-400/40"
+              >
+                Iniciar compartir ubicacion
+              </button>
+              <button
+                (click)="stopSharing()"
+                [disabled]="status!=='sharing'"
+                class="rounded-full border border-rose-400/50 bg-rose-500/10 px-5 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:border-rose-400/20 disabled:text-rose-200/40"
+              >
+                Detener compartir
+              </button>
+              <button
+                *ngIf="status==='denied'"
+                (click)="startSharing()"
+                class="rounded-full border border-amber-400/60 bg-amber-500/10 px-5 py-2 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/20"
+              >
+                Reintentar permisos
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="lg:col-span-5">
+          <div class="rounded-3xl border border-white/10 bg-slate-900/60 p-6">
+            <h2 class="text-lg font-semibold text-white">Estado de ubicacion</h2>
+            <p class="mt-1 text-xs text-slate-400">Seguimiento en tiempo real.</p>
+
+            <div class="mt-5 space-y-4">
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div class="text-xs uppercase tracking-wider text-slate-400">Ultima ubicacion</div>
+                <div *ngIf="lastPosition" class="mt-2 text-sm text-slate-200">
+                  {{ lastPosition.lat | number:'1.5-6' }}, {{ lastPosition.lng | number:'1.5-6' }}
+                  <div class="text-xs text-slate-400">{{ lastPosition.at }}</div>
+                </div>
+                <div *ngIf="!lastPosition" class="mt-2 text-sm text-slate-500">
+                  Sin ubicacion registrada
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div class="text-xs uppercase tracking-wider text-slate-400">Conexion</div>
+                <div class="mt-2 text-sm text-slate-200">
+                  Reintentos socket: <span class="font-semibold text-white">{{ reconnectAttempts }}</span>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+                Mantente en la aplicacion abierta para enviar tu ubicacion en tiempo real.
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
   </div>
 </div>
