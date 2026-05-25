@@ -1,0 +1,15 @@
+<div class="admin-panel">
+  <h2>Panel Admin</h2>
+  <ng-container *ngIf="(participants || {}) | keyvalue as entries">
+    <p *ngIf="!entries.length">No hay participantes activos</p>
+    <ul>
+      <li *ngFor="let entry of entries">
+        <div>
+          <strong>{{ entry.value.tecnologico || entry.key }}</strong>
+          <div>Lat: {{ entry.value.lat }} — Lng: {{ entry.value.lng }}</div>
+          <div>Actualizado: {{ entry.value.updatedAt }}</div>
+        </div>
+      </li>
+    </ul>
+  </ng-container>
+</div>

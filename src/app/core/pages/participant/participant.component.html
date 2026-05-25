@@ -1,0 +1,21 @@
+<div class="participant-form">
+  <h2>Participante</h2>
+  <label>
+    Tecnológico
+    <input [(ngModel)]="participantData.tecnologico" />
+  </label>
+  <label>
+    Encargado
+    <input [(ngModel)]="participantData.encargado" />
+  </label>
+  <label>
+    Teléfono
+    <input [(ngModel)]="participantData.telefono" />
+  </label>
+
+  <div style="margin-top:12px">
+    <button (click)="saveData()">Guardar datos</button>
+    <button (click)="startSharing()">Iniciar compartir ubicación</button>
+    <button (click)="stopSharing()">Detener compartir</button>
+  </div>
+</div>

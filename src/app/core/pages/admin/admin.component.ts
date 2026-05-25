@@ -1,9 +1,12 @@
 import { Component, OnInit } from "@angular/core";
+import { CommonModule } from '@angular/common';
 import { SocketService } from "../../services/socket.service";
 
 @Component({
     selector: 'app-admin',
-    templateUrl: './admin.component.html'
+    templateUrl: './admin.component.html',
+    standalone: true,
+    imports: [CommonModule]
 })
 
 export class AdminComponent implements OnInit {

@@ -1,10 +1,13 @@
 import { Component } from "@angular/core";
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { SocketService } from "../../services/socket.service";
-import { error } from "console";
 
 @Component({
     selector: 'app-participant',
-    templateUrl: './participant.component.html'
+    templateUrl: './participant.component.html',
+    standalone: true,
+    imports: [CommonModule, FormsModule]
 })
 
 export class ParticipantComponent {
@@ -30,6 +33,11 @@ export class ParticipantComponent {
 
     // ACTIVAR UBICACION
     startSharing() {
+        this.SocketService.emit('participant:join', {
+            id: this.participantId,
+            ...this.participantData
+        });
+
         this.watchId = navigator.geolocation.watchPosition((position) => {
             const payload = {
                 id: this.participantId,
@@ -56,6 +64,8 @@ export class ParticipantComponent {
             navigator.geolocation.clearWatch(
                 this.watchId
             );
+
+            this.watchId = null;
 
             this.SocketService.emit('location:stop', this.participantId);
         }
