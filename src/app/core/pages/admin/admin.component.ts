@@ -40,7 +40,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!isPlatformBrowser(this.platformId)) return;
 
         // load Leaflet dynamically
-        const L = await import('leaflet');
+        const leafletModule: any = await import('leaflet');
+        const L = leafletModule?.default ?? leafletModule;
         this.L = L;
 
         // use divIcon to avoid external image requests for default markers
