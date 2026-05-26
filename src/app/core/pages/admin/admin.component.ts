@@ -157,17 +157,18 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         const label = (participant?.tecnologico || participant?.encargado || '').toString().slice(0, 2).toUpperCase();
         const tech = this.getTechById(participant?.techId);
         const logoUrl = tech?.logoURL || '';
-        // Pin SVG (keep commented so it is easy to restore later)
-        // const svg = `
-        //     <svg xmlns="http://www.w3.org/2000/svg" width="42" height="48" viewBox="0 0 42 48">
-        //         <defs>
-        //             <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-        //                 <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.35" />
-        //             </filter>
-        //         </defs>
-        //         <path filter="url(#shadow)" d="M21 1C12.2 1 5 8.2 5 17c0 11.4 12.8 25.6 15.1 28.1.5.6 1.4.6 1.9 0C24.2 42.6 37 28.4 37 17 37 8.2 29.8 1 21 1z" fill="#e11d48" stroke="#ffffff" stroke-width="2"/>
-        //     </svg>
-        // `;
+        const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="48" viewBox="0 0 42 48">
+                <defs>
+                    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.35" />
+                    </filter>
+                </defs>
+                <path filter="url(#shadow)" d="M21 1C12.2 1 5 8.2 5 17c0 11.4 12.8 25.6 15.1 28.1.5.6 1.4.6 1.9 0C24.2 42.6 37 28.4 37 17 37 8.2 29.8 1 21 1z" fill="#e11d48" stroke="#ffffff" stroke-width="2"/>
+                <circle cx="21" cy="17" r="9" fill="#ffffff"/>
+                <text x="21" y="20.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#e11d48">${label}</text>
+            </svg>
+        `;
         // Previous marker HTML (kept for easy restore)
         // const logoHtml = logoUrl
         //     ? `<img src="${logoUrl}" style="width:48px;height:48px;object-fit:cover;border-radius:999px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />`
@@ -184,7 +185,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
         const html = logoUrl
             ? `<img src="${logoUrl}" style="width:42px;height:42px;border-radius:999px;object-fit:cover;" />`
-            : `<div style="width:42px;height:42px;border-radius:999px;background:#0f172a;display:flex;align-items:center;justify-content:center;font-family:Arial, sans-serif;font-size:11px;font-weight:700;color:#e11d48;">${label}</div>`;
+            : `<div style="width:42px;height:48px;">${svg}</div>`;
 
         return this.L.divIcon({
             html,
@@ -196,7 +197,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
     private markerPopupContent(p: any) {
         const name = p.tecnologico || p.encargado || p.id;
-        const updated = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : '';
+        const updated = this.formatDateTime(p.updatedAt);
         const encargado = p.encargado ? `<div>Encargado: ${p.encargado}</div>` : '';
         const telefono = p.telefono ? `<div>Teléfono: ${p.telefono}</div>` : '';
         return `<div><strong>${name}</strong>${encargado}${telefono}<div>Lat: ${p.lat} — Lng: ${p.lng}</div><div>Se conectó: ${updated}</div></div>`;
@@ -327,6 +328,16 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
         return Math.round(kmh * 10) / 10;
 
+    }
+
+    formatDateTime(value: string | number | Date | null | undefined) {
+        if (!value) return '—';
+        const date = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(date.getTime())) return '—';
+        return new Intl.DateTimeFormat('es-MX', {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+        }).format(date);
     }
 
     focusParticipant(id: string) {
