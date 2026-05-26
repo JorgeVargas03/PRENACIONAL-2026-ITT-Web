@@ -46,7 +46,7 @@
             </div>
             <div class="p-4">
               <div #mapContainer id="admin-map"
-                class="h-[60vh] min-h-[360px] w-full rounded-2xl border border-white/10"></div>
+                class="h-[45vh] min-h-[280px] w-full rounded-2xl border border-white/10 sm:h-[55vh] sm:min-h-[320px] lg:h-[60vh] lg:min-h-[360px]"></div>
             </div>
           </div>
         </section>
@@ -61,7 +61,7 @@
               <span class="text-xs text-slate-400">{{ participantsCount }} en linea</span>
             </div>
 
-            <div class="max-h-[60vh] overflow-auto p-4">
+            <div class="max-h-[50vh] overflow-auto p-4 sm:max-h-[60vh]">
               <p *ngIf="!participantsList.length"
                 class="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
                 No hay participantes activos.

@@ -2,6 +2,7 @@ import { Component, Inject, NgZone, OnInit, PLATFORM_ID } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import Swal from 'sweetalert2';
 import { SocketService } from "../../services/socket.service";
 import { TECH_BY_ID, TECH_CATALOG } from "../../types/tecType";
 
@@ -88,13 +89,27 @@ export class ParticipantComponent implements OnInit {
         if (!this.isBrowser) return;
         localStorage.setItem('participantData', JSON.stringify(this.participantData));
         localStorage.setItem('participantId', String(this.participantId));
-        this.ngZone.run(() => alert('Datos guardados'));
+        this.ngZone.run(() => {
+            void Swal.fire({
+                icon: 'success',
+                title: 'Datos guardados',
+                toast: true,
+                position: 'top-end',
+                background: '#0f172a',
+                color: '#e2e8f0',
+                iconColor: '#34d399',
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+        });
     }
 
     // Public: iniciar compartir (maneja permisos y reconexión)
     async startSharing() {
         if (!this.isBrowser) return;
         if (this.isSharingActive) return;
+        if (!this.isFormValid) return;
         this.sharingRequested = true;
         this.ngZone.run(() => this.status = 'sharing');
         // check geolocation permission if available
@@ -197,5 +212,11 @@ export class ParticipantComponent implements OnInit {
 
     get isSharingActive() {
         return this.status === 'sharing' || this.status === 'reconnecting' || this.sharingRequested;
+    }
+
+    get isFormValid() {
+        return !!this.participantData.tecId
+            && this.participantData.encargado.trim().length > 0
+            && this.participantData.telefono.trim().length > 0;
     }
 }

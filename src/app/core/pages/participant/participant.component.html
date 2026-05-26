@@ -84,22 +84,22 @@
               </label>
             </div>
 
-            <div class="mt-6 flex flex-wrap gap-3">
+            <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button (click)="saveData()"
                 [disabled]="isSharingActive"
-                class="rounded-full border border-white/10 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20">
+                class="w-full rounded-full border border-white/10 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20 sm:w-auto">
                 Guardar datos
               </button>
-              <button (click)="startSharing()" [disabled]="status==='sharing' || status==='reconnecting'"
-                class="rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-emerald-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-emerald-400/40">
+              <button (click)="startSharing()" [disabled]="status==='sharing' || status==='reconnecting' || !isFormValid"
+                class="w-full rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-emerald-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-emerald-400/40 sm:w-auto">
                 Iniciar compartir ubicacion
               </button>
               <button (click)="stopSharing()" [disabled]="!isSharingActive"
-                class="rounded-full border border-rose-400/50 bg-rose-500/10 px-5 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:border-rose-400/20 disabled:text-rose-200/40">
+                class="w-full rounded-full border border-rose-400/50 bg-rose-500/10 px-5 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:border-rose-400/20 disabled:text-rose-200/40 sm:w-auto">
                 Detener compartir
               </button>
               <button *ngIf="status==='denied'" (click)="startSharing()"
-                class="rounded-full border border-amber-400/60 bg-amber-500/10 px-5 py-2 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/20">
+                class="w-full rounded-full border border-amber-400/60 bg-amber-500/10 px-5 py-2 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/20 sm:w-auto">
                 Reintentar permisos
               </button>
             </div>
