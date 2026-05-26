@@ -321,6 +321,17 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
     }
 
+    focusParticipant(id: string) {
+        if(!this.map || !this.markers[id]) return;
+
+        const marker = this.markers[id];
+        const pos = marker.getLatLng();
+
+        this.map.setView(pos, 16, {animate: true});
+        this.renderTrail(id);
+        //marker.openPopup();
+    }
+
     lastWordTech(tec: string | undefined) {
         return tec?.split(' ').pop();
     }

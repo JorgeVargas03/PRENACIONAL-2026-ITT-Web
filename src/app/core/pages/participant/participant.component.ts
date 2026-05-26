@@ -19,7 +19,7 @@ export class ParticipantComponent implements OnInit {
     techOptions = TECH_CATALOG;
 
     participantData = {
-        tecId: '',
+        tecId: null as string | null,
         encargado: '',
         telefono: ''
     };
@@ -51,6 +51,10 @@ export class ParticipantComponent implements OnInit {
                 } catch (e) {
                     // ignore
                 }
+            }
+            const savedTecId = this.participantData.tecId;
+            if (!savedTecId || !TECH_BY_ID.get(savedTecId)) {
+                this.participantData.tecId = null;
             }
         } else {
             this.participantId = 'server';
@@ -112,7 +116,7 @@ export class ParticipantComponent implements OnInit {
         this.startGeolocationWatch();
     }
 
-    private startGeolocationWatch(){
+    private startGeolocationWatch() {
         if (!this.isBrowser) return;
         if (!('geolocation' in navigator)) {
             this.status = 'error';
@@ -142,7 +146,7 @@ export class ParticipantComponent implements OnInit {
                     this.status = 'sharing';
                 });
             },
-            (error) =>{
+            (error) => {
                 console.error('Geolocation error', error);
                 this.ngZone.run(() => {
                     const wasSharing = this.status === 'sharing';
@@ -168,9 +172,9 @@ export class ParticipantComponent implements OnInit {
     }
 
     // DETENER UBICACION
-    stopSharing(){
+    stopSharing() {
         if (!this.isBrowser) return;
-        if(this.watchId !== null){
+        if (this.watchId !== null) {
             navigator.geolocation.clearWatch(this.watchId);
             this.watchId = null;
             this.SocketService.emit('location:stop', this.participantId);
@@ -179,7 +183,7 @@ export class ParticipantComponent implements OnInit {
         this.sharingRequested = false;
     }
 
-    private safeUuid(){
+    private safeUuid() {
         if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
             return crypto.randomUUID();
         }
@@ -187,7 +191,8 @@ export class ParticipantComponent implements OnInit {
     }
 
     get SelectedTech() {
-        return TECH_BY_ID.get(this.participantData.tecId) ?? null;
+        const tecId = this.participantData.tecId;
+        return tecId ? TECH_BY_ID.get(tecId) ?? null: null;
     }
 
     get isSharingActive() {
