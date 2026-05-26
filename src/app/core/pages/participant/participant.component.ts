@@ -28,6 +28,7 @@ export class ParticipantComponent implements OnInit {
     status: 'idle' | 'sharing' | 'stopped' | 'denied' | 'reconnecting' | 'error' = 'idle';
     lastPosition: { lat: number; lng: number; at: string } | null = null;
     reconnectAttempts = 0;
+    sharingRequested = false;
 
     constructor(
         private SocketService: SocketService,
@@ -89,12 +90,16 @@ export class ParticipantComponent implements OnInit {
     // Public: iniciar compartir (maneja permisos y reconexión)
     async startSharing() {
         if (!this.isBrowser) return;
+        if (this.isSharingActive) return;
+        this.sharingRequested = true;
+        this.ngZone.run(() => this.status = 'sharing');
         // check geolocation permission if available
         try {
             if ((navigator as any).permissions && (navigator as any).permissions.query) {
                 const perm = await (navigator as any).permissions.query({ name: 'geolocation' });
                 if (perm.state === 'denied') {
                     this.status = 'denied';
+                    this.sharingRequested = false;
                     return;
                 }
             }
@@ -105,7 +110,6 @@ export class ParticipantComponent implements OnInit {
         // emit join and start watching
         this.SocketService.emit('participant:join', { id: this.participantId, ...this.participantData });
         this.startGeolocationWatch();
-        this.status = 'sharing';
     }
 
     private startGeolocationWatch(){
@@ -124,7 +128,7 @@ export class ParticipantComponent implements OnInit {
                 const payload = {
                     techId: this.participantData.tecId,
                     id: this.participantId,
-                    tecnologico: this.lastWordTech(selected?.name) ?? '',
+                    tecnologico: selected?.name ?? '',
                     ...this.participantData,
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
@@ -144,8 +148,10 @@ export class ParticipantComponent implements OnInit {
                     const wasSharing = this.status === 'sharing';
                     if (error.code === error.PERMISSION_DENIED) {
                         this.status = 'denied';
+                        this.sharingRequested = false;
                     } else {
                         this.status = 'error';
+                        this.sharingRequested = false;
                         // schedule retry if we were sharing before the error
                         if (wasSharing) {
                             setTimeout(() => this.startGeolocationWatch(), 3000);
@@ -170,6 +176,7 @@ export class ParticipantComponent implements OnInit {
             this.SocketService.emit('location:stop', this.participantId);
         }
         this.status = 'stopped';
+        this.sharingRequested = false;
     }
 
     private safeUuid(){
@@ -183,7 +190,7 @@ export class ParticipantComponent implements OnInit {
         return TECH_BY_ID.get(this.participantData.tecId) ?? null;
     }
 
-    private lastWordTech(tec: string | undefined){
-        return tec?.split(' ').pop();
+    get isSharingActive() {
+        return this.status === 'sharing' || this.status === 'reconnecting' || this.sharingRequested;
     }
 }

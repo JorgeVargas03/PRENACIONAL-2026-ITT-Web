@@ -72,7 +72,7 @@
                 <div class="flex items-start justify-between gap-3">
                   <div>
                     <p class="text-base font-semibold text-white">
-                      {{ entry.tecnologico || entry.id }}
+                      {{ lastWordTech(entry.tecnologico) || entry.id }}
                     </p>
                     <p class="text-xs text-slate-400">Encargado: {{ entry.encargado || 'Sin dato' }}</p>
                   </div>
@@ -86,6 +86,12 @@
                   <div class="flex items-center justify-between">
                     <span>Lng</span>
                     <span class="font-mono text-slate-200">{{ entry.lng | number:'1.5-6' }}</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span>Velocidad</span>
+                    <span class="font-mono text-slate-200">
+                      {{ entry.speedKmh != null ? (entry.speedKmh | number:'1.0-1') + ' km/h' : '—' }}
+                    </span>
                   </div>
                   <div class="flex items-center justify-between">
                     <span>Actualizado</span>

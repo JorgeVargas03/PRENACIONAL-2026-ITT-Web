@@ -17,6 +17,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     participants: any = {};
     participantsList: any[] = [];
     participantsCount = 0;
+    lastPositions: Record<string, { lat: number; lng: number; at: number }> = {};
     private L: any;
     private map?: any;
     private markers: Record<string, any> = {};
@@ -74,10 +75,14 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
         // real-time update
         this.socketService.listen('participant:updated', (participant: any) => {
+            const lat = Number(participant.lat);
+            const lng = Number(participant.lng);
+            const speedKmh = this.estimateSpeedKmh(participant.id, lat, lng);
             this.ngZone.run(() => {
                 this.participants = {
                     ...this.participants,
-                    [participant.id]: participant
+                    [participant.id]: participant,
+                    speedKmh
                 };
                 this.upsertMarker(participant);
                 this.appendTrailPoint(participant);
@@ -95,7 +100,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         });
 
         // participant removed
-        this.socketService.listen('participant:removed', (id: string)=>{
+        this.socketService.listen('participant:removed', (id: string) => {
             this.ngZone.run(() => {
                 const next = { ...this.participants };
                 delete next[id];
@@ -123,16 +128,16 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         return id ? TECH_BY_ID.get(id) : null;
     }
 
-    private upsertMarker(participant: any){
-        if(!participant || participant.lat == null || participant.lng == null) return;
+    private upsertMarker(participant: any) {
+        if (!participant || participant.lat == null || participant.lng == null) return;
 
         const lat = Number(participant.lat);
         const lng = Number(participant.lng);
 
-        if(this.markers[participant.id]){
+        if (this.markers[participant.id]) {
             this.markers[participant.id].setLatLng([lat, lng]);
             this.markers[participant.id].setPopupContent(this.markerPopupContent(participant));
-        } else if(this.map){
+        } else if (this.map) {
             const marker = this.L.marker([lat, lng], {
                 icon: this.buildMarkerIcon(participant)
             });
@@ -145,7 +150,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cdr.detectChanges();
     }
 
-    private buildMarkerIcon(participant: any){
+    private buildMarkerIcon(participant: any) {
         const label = (participant?.tecnologico || participant?.encargado || '').toString().slice(0, 2).toUpperCase();
         const svg = `
             <svg xmlns="http://www.w3.org/2000/svg" width="42" height="48" viewBox="0 0 42 48">
@@ -169,17 +174,17 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         });
     }
 
-    private markerPopupContent(p: any){
+    private markerPopupContent(p: any) {
         const name = p.tecnologico || p.encargado || p.id;
         const updated = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : '';
         const encargado = p.encargado ? `<div>Encargado: ${p.encargado}</div>` : '';
         const telefono = p.telefono ? `<div>Teléfono: ${p.telefono}</div>` : '';
-        return `<div><strong>${name}</strong>${encargado}${telefono}<div>Lat: ${p.lat} — Lng: ${p.lng}</div><div>${updated}</div></div>`;
+        return `<div><strong>${name}</strong>${encargado}${telefono}<div>Lat: ${p.lat} — Lng: ${p.lng}</div><div>Se conectó: ${updated}</div></div>`;
     }
 
-    private removeMarker(id: string){
+    private removeMarker(id: string) {
         const m = this.markers[id];
-        if(m){
+        if (m) {
             m.remove();
             delete this.markers[id];
         }
@@ -187,8 +192,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cdr.detectChanges();
     }
 
-    private appendTrailPoint(participant: any){
-        if(!participant || participant.lat == null || participant.lng == null) return;
+    private appendTrailPoint(participant: any) {
+        if (!participant || participant.lat == null || participant.lng == null) return;
         const lat = Number(participant.lat);
         const lng = Number(participant.lng);
         const list = this.trails[participant.id] || [];
@@ -196,8 +201,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         this.trails[participant.id] = list;
     }
 
-    private renderTrail(id: string){
-        if(!this.map || !this.L) return;
+    private renderTrail(id: string) {
+        if (!this.map || !this.L) return;
         this.activeTrailId = id;
 
         Object.keys(this.polylines).forEach(key => {
@@ -221,7 +226,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
-    private clearTrail(id: string){
+    private clearTrail(id: string) {
         delete this.trails[id];
         if (this.polylines[id]) {
             this.polylines[id].remove();
@@ -230,12 +235,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.activeTrailId === id) this.activeTrailId = null;
     }
 
-    recenterMap(){
+    recenterMap() {
         this.updateBounds(true);
     }
 
-    private updateBounds(force = false){
-        if(!this.map || !this.L) return;
+    private updateBounds(force = false) {
+        if (!this.map || !this.L) return;
         const ids = Object.keys(this.markers);
         if (ids.length === 0) return;
 
@@ -252,24 +257,59 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16, animate: true });
     }
 
-    private syncMarkersWithParticipants(){
+    private syncMarkersWithParticipants() {
         // add/update markers
-        for(const id of Object.keys(this.participants || {})){
+        for (const id of Object.keys(this.participants || {})) {
             this.upsertMarker(this.participants[id]);
             this.appendTrailPoint(this.participants[id]);
         }
 
         // remove markers that no longer exist
-        for(const id of Object.keys(this.markers)){
-            if(!this.participants[id]) this.removeMarker(id);
+        for (const id of Object.keys(this.markers)) {
+            if (!this.participants[id]) this.removeMarker(id);
         }
         this.updateParticipantCounters();
     }
 
-    private updateParticipantCounters(){
+    private updateParticipantCounters() {
         this.participantsList = Object.values(this.participants || {});
         const fromParticipants = this.participantsList.length;
         const fromMarkers = Object.keys(this.markers).length;
         this.participantsCount = Math.max(fromParticipants, fromMarkers);
+    }
+
+    private toRoad(v: number) {
+        return (v * Math.PI) / 180;
+    }
+
+    private haversineMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+        const R = 6371000;
+        const dLat = this.toRoad(b.lat - a.lat);
+        const dLng = this.toRoad(b.lng - a.lng);
+        const lat1 = this.toRoad(a.lat);
+        const lat2 = this.toRoad(b.lat);
+
+        const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
+
+    private estimateSpeedKmh(id: string, lat: number, lng:number) {
+        const now = Date.now();
+        const prev = this.lastPositions[id];
+        this.lastPositions[id] = { lat, lng, at: now};
+
+        if (!prev) return null;
+
+        const d = this.haversineMeters({lat: prev.lat, lng: prev.lng}, {lat, lng});
+        const dt = Math.max(1, (now - prev.at) / 1000);
+        const kmh = (d / dt) * 3.6;
+
+        return Math.round(kmh * 10) / 10;
+
+    }
+
+    lastWordTech(tec: string | undefined) {
+        return tec?.split(' ').pop();
     }
 }
