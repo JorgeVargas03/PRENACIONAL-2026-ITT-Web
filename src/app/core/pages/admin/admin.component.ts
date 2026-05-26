@@ -168,15 +168,23 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         //         <path filter="url(#shadow)" d="M21 1C12.2 1 5 8.2 5 17c0 11.4 12.8 25.6 15.1 28.1.5.6 1.4.6 1.9 0C24.2 42.6 37 28.4 37 17 37 8.2 29.8 1 21 1z" fill="#e11d48" stroke="#ffffff" stroke-width="2"/>
         //     </svg>
         // `;
-        const html = `
-            <div style="position:relative;width:48px;height:48px;">
-                <!-- Pin SVG removed; uncomment the block above to restore -->
-                <div style="position:absolute;left:4px;top:4px;width:40px;height:40px;border-radius:999px;overflow:hidden;background:#ffffff;border:2px solid #ffffff;display:flex;align-items:center;justify-content:center;">
-                    ${logoUrl ? `<img src="${logoUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />` : ''}
-                    <span style="display:${logoUrl ? 'none' : 'flex'};width:100%;height:100%;align-items:center;justify-content:center;font-family:Arial, sans-serif;font-size:11px;font-weight:700;color:#e11d48;">${label}</span>
-                </div>
-            </div>
-        `;
+        // Previous marker HTML (kept for easy restore)
+        // const logoHtml = logoUrl
+        //     ? `<img src="${logoUrl}" style="width:48px;height:48px;object-fit:cover;border-radius:999px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />`
+        //     : '';
+        // const html = `
+        //     <div style="position:relative;width:48px;height:48px;">
+        //         <!-- Pin SVG removed; uncomment the block above to restore -->
+        //         <div style="position:absolute;left:0;top:0;width:48px;height:48px;border-radius:999px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        //             ${logoHtml}
+        //             <span style="display:${logoUrl ? 'none' : 'flex'};width:48px;height:48px;align-items:center;justify-content:center;font-family:Arial, sans-serif;font-size:11px;font-weight:700;color:#e11d48;">${label}</span>
+        //         </div>
+        //     </div>
+        // `;
+
+        const html = logoUrl
+            ? `<img src="${logoUrl}" style="width:42px;height:42px;border-radius:999px;object-fit:cover;" />`
+            : `<div style="width:42px;height:42px;border-radius:999px;background:#0f172a;display:flex;align-items:center;justify-content:center;font-family:Arial, sans-serif;font-size:11px;font-weight:700;color:#e11d48;">${label}</div>`;
 
         return this.L.divIcon({
             html,
