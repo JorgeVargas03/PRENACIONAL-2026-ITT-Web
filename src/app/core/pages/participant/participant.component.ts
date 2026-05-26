@@ -2,6 +2,7 @@ import { Component, Inject, NgZone, OnInit, PLATFORM_ID } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SocketService } from "../../services/socket.service";
+import { TECH_BY_ID, TECH_CATALOG } from "../../types/tecType";
 
 @Component({
     selector: 'app-participant',
@@ -14,9 +15,10 @@ export class ParticipantComponent implements OnInit {
     watchId: number | null = null;
     participantId = '';
     private isBrowser = false;
+    techOptions = TECH_CATALOG;
 
     participantData = {
-        tecnologico: '',
+        tecId: '',
         encargado: '',
         telefono: ''
     };
@@ -117,8 +119,11 @@ export class ParticipantComponent implements OnInit {
 
         this.watchId = navigator.geolocation.watchPosition(
             (position) => {
+                const selected = this.SelectedTech;
                 const payload = {
+                    techId: this.participantData.tecId,
                     id: this.participantId,
+                    tecnologico: selected?.name ?? '',
                     ...this.participantData,
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
@@ -171,5 +176,9 @@ export class ParticipantComponent implements OnInit {
             return crypto.randomUUID();
         }
         return `p-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    get SelectedTech() {
+        return TECH_BY_ID.get(this.participantData.tecId) ?? null;
     }
 }

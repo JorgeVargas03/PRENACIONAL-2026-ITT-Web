@@ -8,23 +8,21 @@
         <div>
           <p class="text-xs uppercase tracking-[0.35em] text-emerald-300/80">Modo Participante</p>
           <h1 class="mt-2 text-3xl font-semibold text-white font-['Space_Grotesk'] sm:text-4xl">Compartir Ubicacion</h1>
-          <p class="mt-2 text-sm text-slate-300">Registra tus datos y controla cuando enviar tu ubicacion en tiempo real.</p>
+          <p class="mt-2 text-sm text-slate-300">Registra tus datos y controla cuando enviar tu ubicacion en tiempo
+            real.</p>
         </div>
         <div class="flex flex-wrap gap-3">
           <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
             <div class="text-xs uppercase tracking-wider text-slate-400">ID</div>
             <div class="mt-1 truncate text-sm font-semibold text-white">{{ participantId }}</div>
           </div>
-          <div
-            [ngClass]="{
+          <div [ngClass]="{
               'bg-slate-200/90 text-slate-900': status==='idle',
               'bg-emerald-300/90 text-emerald-900': status==='sharing',
               'bg-amber-300/90 text-amber-900': status==='reconnecting',
               'bg-rose-300/90 text-rose-900': status==='denied' || status==='error',
               'bg-sky-300/90 text-sky-900': status==='stopped'
-            }"
-            class="rounded-2xl px-4 py-3 text-sm font-semibold"
-          >
+            }" class="rounded-2xl px-4 py-3 text-sm font-semibold">
             Estado: {{ status }}
           </div>
         </div>
@@ -32,63 +30,53 @@
 
       <div class="mt-6 grid gap-6 lg:grid-cols-12">
         <section class="lg:col-span-7">
-          <div class="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-[0_20px_60px_-35px_rgba(0,0,0,0.9)]">
+          <div
+            class="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-[0_20px_60px_-35px_rgba(0,0,0,0.9)]">
             <h2 class="text-lg font-semibold text-white">Datos del participante</h2>
             <p class="mt-1 text-xs text-slate-400">Se guardan en este dispositivo.</p>
 
             <div class="mt-5 grid gap-4">
               <label class="text-xs uppercase tracking-wider text-slate-400">
                 Tecnologico
-                <input
-                  [(ngModel)]="participantData.tecnologico"
-                  class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/50 focus:ring-2 focus:ring-emerald-300/30"
-                  placeholder="Nombre del tecnologico"
-                />
+                <select [(ngModel)]="participantData.tecId"
+                  class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition">
+                  <option value="" disabled>Selecciona tu Instituto Tecnológico</option>
+                  <option *ngFor="let t of techOptions" [value]="t.id">{{t.name}}</option>
+                </select>
               </label>
+              <div *ngIf="SelectedTech" class="mt-2 flex items-center gap-3">
+                <img [src]="SelectedTech.logoURL" alt="" class="h-10 w-10 rounded-full">
+                <span class="text-sm text-slate-200">{{ SelectedTech.name }}</span>
+              </div>
               <label class="text-xs uppercase tracking-wider text-slate-400">
                 Encargado
-                <input
-                  [(ngModel)]="participantData.encargado"
+                <input [(ngModel)]="participantData.encargado"
                   class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/50 focus:ring-2 focus:ring-emerald-300/30"
-                  placeholder="Nombre del encargado"
-                />
+                  placeholder="Nombre del encargado" />
               </label>
               <label class="text-xs uppercase tracking-wider text-slate-400">
                 Telefono
-                <input
-                  [(ngModel)]="participantData.telefono"
+                <input [(ngModel)]="participantData.telefono"
                   class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/50 focus:ring-2 focus:ring-emerald-300/30"
-                  placeholder="Numero de contacto"
-                />
+                  placeholder="Numero de contacto" />
               </label>
             </div>
 
             <div class="mt-6 flex flex-wrap gap-3">
-              <button
-                (click)="saveData()"
-                class="rounded-full border border-white/10 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-              >
+              <button (click)="saveData()"
+                class="rounded-full border border-white/10 bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20">
                 Guardar datos
               </button>
-              <button
-                (click)="startSharing()"
-                [disabled]="status==='sharing' || status==='reconnecting'"
-                class="rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-emerald-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-emerald-400/40"
-              >
+              <button (click)="startSharing()" [disabled]="status==='sharing' || status==='reconnecting'"
+                class="rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-emerald-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-emerald-400/40">
                 Iniciar compartir ubicacion
               </button>
-              <button
-                (click)="stopSharing()"
-                [disabled]="status!=='sharing'"
-                class="rounded-full border border-rose-400/50 bg-rose-500/10 px-5 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:border-rose-400/20 disabled:text-rose-200/40"
-              >
+              <button (click)="stopSharing()" [disabled]="status!=='sharing'"
+                class="rounded-full border border-rose-400/50 bg-rose-500/10 px-5 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:border-rose-400/20 disabled:text-rose-200/40">
                 Detener compartir
               </button>
-              <button
-                *ngIf="status==='denied'"
-                (click)="startSharing()"
-                class="rounded-full border border-amber-400/60 bg-amber-500/10 px-5 py-2 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/20"
-              >
+              <button *ngIf="status==='denied'" (click)="startSharing()"
+                class="rounded-full border border-amber-400/60 bg-amber-500/10 px-5 py-2 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/20">
                 Reintentar permisos
               </button>
             </div>
