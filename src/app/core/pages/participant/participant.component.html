@@ -38,16 +38,35 @@
             <div class="mt-5 grid gap-4">
               <label class="text-xs uppercase tracking-wider text-slate-400">
                 Tecnologico
-                <select [(ngModel)]="participantData.tecId"
-                  class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition">
-                  <option value="" disabled>Selecciona tu Instituto Tecnológico</option>
-                  <option *ngFor="let t of techOptions" [value]="t.id">{{t.name}}</option>
-                </select>
+                <div class="mt-2 flex items-center gap-3">
+                  <ng-select
+                    class="ng-select-custom flex-1"
+                    [items]="techOptions"
+                    bindLabel="name"
+                    bindValue="id"
+                    [searchable]="false"
+                    [clearable]="false"
+                    [(ngModel)]="participantData.tecId"
+                    placeholder="Selecciona tu Instituto Tecnologico"
+                  >
+                    <ng-template ng-option-tmp let-item="item">
+                      <div class="flex items-center gap-3">
+                        <img [src]="item.logoURL" alt="" class="h-7 w-7 rounded-full" />
+                        <span class="text-sm text-slate-100">{{ item.name }}</span>
+                      </div>
+                    </ng-template>
+                    <ng-template ng-label-tmp let-item="item">
+                      <div class="flex items-center gap-2">
+                        <img [src]="item.logoURL" alt="" class="h-6 w-6 rounded-full" />
+                        <span class="text-sm text-slate-100">{{ item.name }}</span>
+                      </div>
+                    </ng-template>
+                  </ng-select>
+                  <div *ngIf="SelectedTech" class="shrink-0 rounded-2xl border border-white/10 bg-white/5 px-2.5 py-2">
+                    <img [src]="SelectedTech.logoURL" alt="" class="h-8 w-8 rounded-full" />
+                  </div>
+                </div>
               </label>
-              <div *ngIf="SelectedTech" class="mt-2 flex items-center gap-3">
-                <img [src]="SelectedTech.logoURL" alt="" class="h-10 w-10 rounded-full">
-                <span class="text-sm text-slate-200">{{ SelectedTech.name }}</span>
-              </div>
               <label class="text-xs uppercase tracking-wider text-slate-400">
                 Encargado
                 <input [(ngModel)]="participantData.encargado"

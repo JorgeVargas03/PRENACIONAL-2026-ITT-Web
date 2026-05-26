@@ -2,6 +2,7 @@ import { AfterViewInit, ApplicationRef, ChangeDetectorRef, Component, ElementRef
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { SocketService } from "../../services/socket.service";
+import { TECH_BY_ID } from "../../types/tecType";
 
 @Component({
     selector: 'app-admin',
@@ -116,6 +117,10 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         } catch (e) {
             // ignore
         }
+    }
+
+    getTechById(id: string | null | undefined) {
+        return id ? TECH_BY_ID.get(id) : null;
     }
 
     private upsertMarker(participant: any){

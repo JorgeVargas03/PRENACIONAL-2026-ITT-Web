@@ -1,6 +1,7 @@
 import { Component, Inject, NgZone, OnInit, PLATFORM_ID } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { SocketService } from "../../services/socket.service";
 import { TECH_BY_ID, TECH_CATALOG } from "../../types/tecType";
 
@@ -8,7 +9,7 @@ import { TECH_BY_ID, TECH_CATALOG } from "../../types/tecType";
     selector: 'app-participant',
     templateUrl: './participant.component.html',
     standalone: true,
-    imports: [CommonModule, FormsModule]
+    imports: [CommonModule, FormsModule, NgSelectModule]
 })
 
 export class ParticipantComponent implements OnInit {
@@ -123,7 +124,7 @@ export class ParticipantComponent implements OnInit {
                 const payload = {
                     techId: this.participantData.tecId,
                     id: this.participantId,
-                    tecnologico: selected?.name ?? '',
+                    tecnologico: this.lastWordTech(selected?.name) ?? '',
                     ...this.participantData,
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
@@ -180,5 +181,9 @@ export class ParticipantComponent implements OnInit {
 
     get SelectedTech() {
         return TECH_BY_ID.get(this.participantData.tecId) ?? null;
+    }
+
+    private lastWordTech(tec: string | undefined){
+        return tec?.split(' ').pop();
     }
 }
