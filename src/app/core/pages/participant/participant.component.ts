@@ -131,7 +131,7 @@ export class ParticipantComponent implements OnInit, OnDestroy {
         if (this.isSharingActive) return;
         if (!this.isFormValid) return;
         this.sharingRequested = true;
-        this.showShareOverlay = false;
+        this.showShareOverlay = this.isMobile;
         this.hasFirstFix = false;
         this.lastFixAt = 0;
         this.ngZone.run(() => this.status = 'sharing');
@@ -181,10 +181,7 @@ export class ParticipantComponent implements OnInit, OnDestroy {
 
                 this.ngZone.run(() => {
                     this.lastFixAt = Date.now();
-                    if (!this.hasFirstFix) {
-                        this.hasFirstFix = true;
-                        this.showShareOverlay = this.isMobile;
-                    }
+                    this.hasFirstFix = true;
                     this.lastPosition = { lat: payload.lat, lng: payload.lng, at: new Date().toLocaleTimeString() };
                     this.status = 'sharing';
                 });
