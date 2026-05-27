@@ -1,4 +1,4 @@
-import { Component, Inject, NgZone, OnInit, PLATFORM_ID } from "@angular/core";
+import { Component, Inject, NgZone, OnDestroy, OnInit, PLATFORM_ID } from "@angular/core";
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -13,7 +13,7 @@ import { TECH_BY_ID, TECH_CATALOG } from "../../types/tecType";
     imports: [CommonModule, FormsModule, NgSelectModule]
 })
 
-export class ParticipantComponent implements OnInit {
+export class ParticipantComponent implements OnInit, OnDestroy {
     watchId: number | null = null;
     participantId = '';
     private isBrowser = false;
@@ -31,6 +31,10 @@ export class ParticipantComponent implements OnInit {
     lastPosition: { lat: number; lng: number; at: string } | null = null;
     reconnectAttempts = 0;
     sharingRequested = false;
+    showShareOverlay = false;
+    hasFirstFix = false;
+    lastFixAt = 0;
+    private shareWatchdogId: number | null = null;
 
     constructor(
         private SocketService: SocketService,
@@ -59,6 +63,20 @@ export class ParticipantComponent implements OnInit {
             if (!savedTecId || !TECH_BY_ID.get(savedTecId)) {
                 this.participantData.tecId = null;
             }
+
+            this.shareWatchdogId = window.setInterval(() => {
+                if (!this.isSharingActive || this.lastFixAt === 0) return;
+                const staleMs = Date.now() - this.lastFixAt;
+                if (staleMs > 30000) {
+                    this.ngZone.run(() => {
+                        this.status = 'error';
+                        this.sharingRequested = false;
+                        this.showShareOverlay = false;
+                        this.hasFirstFix = false;
+                        this.lastFixAt = 0;
+                    });
+                }
+            }, 10000);
         } else {
             this.participantId = 'server';
             return;
@@ -113,6 +131,9 @@ export class ParticipantComponent implements OnInit {
         if (this.isSharingActive) return;
         if (!this.isFormValid) return;
         this.sharingRequested = true;
+        this.showShareOverlay = false;
+        this.hasFirstFix = false;
+        this.lastFixAt = 0;
         this.ngZone.run(() => this.status = 'sharing');
         // check geolocation permission if available
         try {
@@ -159,6 +180,11 @@ export class ParticipantComponent implements OnInit {
                 this.SocketService.emit('location:update', payload);
 
                 this.ngZone.run(() => {
+                    this.lastFixAt = Date.now();
+                    if (!this.hasFirstFix) {
+                        this.hasFirstFix = true;
+                        this.showShareOverlay = this.isMobile;
+                    }
                     this.lastPosition = { lat: payload.lat, lng: payload.lng, at: new Date().toLocaleTimeString() };
                     this.status = 'sharing';
                 });
@@ -170,9 +196,13 @@ export class ParticipantComponent implements OnInit {
                     if (error.code === error.PERMISSION_DENIED) {
                         this.status = 'denied';
                         this.sharingRequested = false;
+                        this.showShareOverlay = false;
+                        this.hasFirstFix = false;
                     } else {
                         this.status = 'error';
                         this.sharingRequested = false;
+                        this.showShareOverlay = false;
+                        this.hasFirstFix = false;
                         // schedule retry if we were sharing before the error
                         if (wasSharing) {
                             setTimeout(() => this.startGeolocationWatch(), 3000);
@@ -198,6 +228,16 @@ export class ParticipantComponent implements OnInit {
         }
         this.status = 'stopped';
         this.sharingRequested = false;
+        this.showShareOverlay = false;
+        this.hasFirstFix = false;
+        this.lastFixAt = 0;
+    }
+
+    ngOnDestroy(): void {
+        if (this.shareWatchdogId !== null) {
+            window.clearInterval(this.shareWatchdogId);
+            this.shareWatchdogId = null;
+        }
     }
 
     private safeUuid() {

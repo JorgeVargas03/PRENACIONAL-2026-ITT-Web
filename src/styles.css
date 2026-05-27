@@ -51,6 +51,37 @@
 	}
 }
 
+.share-overlay-ring {
+	position: absolute;
+	inset: 0;
+	border-radius: 999px;
+	border: 2px solid rgba(52, 211, 153, 0.35);
+	animation: sharePulse 2.6s ease-out infinite;
+}
+
+.share-overlay-ring--delay {
+	animation-delay: 0.5s;
+}
+
+.share-overlay-ring--delay-2 {
+	animation-delay: 1s;
+}
+
+@keyframes sharePulse {
+	0% {
+		transform: scale(0.6);
+		opacity: 0.8;
+	}
+	70% {
+		transform: scale(1.05);
+		opacity: 0.15;
+	}
+	100% {
+		transform: scale(1.15);
+		opacity: 0;
+	}
+}
+
 .ng-select.ng-select-custom .ng-arrow-wrapper {
 	padding-right: 8px;
 }
