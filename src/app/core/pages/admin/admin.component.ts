@@ -196,11 +196,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     private markerPopupContent(p: any) {
-        const name = p.tecnologico || p.encargado || p.id;
-        const updated = this.formatDateTime(p.updatedAt);
+        const techName = this.getTechById(p?.techId)?.name;
+        const name = techName || p.tecnologico || p.encargado || p.id;
+        const updated = this.formatTime(p.updatedAt);
         const encargado = p.encargado ? `<div>Encargado: ${p.encargado}</div>` : '';
         const telefono = p.telefono ? `<div>Teléfono: ${p.telefono}</div>` : '';
-        return `<div><strong>${name}</strong>${encargado}${telefono}<div>Lat: ${p.lat} — Lng: ${p.lng}</div><div>Se conectó: ${updated}</div></div>`;
+        return `<div><strong>${name}</strong>${encargado}${telefono}<div>Lat: ${p.lat} — Lng: ${p.lng}</div><div>Actualización: ${updated}</div></div>`;
     }
 
     private removeMarker(id: string) {
@@ -330,12 +331,11 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
     }
 
-    formatDateTime(value: string | number | Date | null | undefined) {
+    formatTime(value: string | number | Date | null | undefined) {
         if (!value) return '—';
         const date = value instanceof Date ? value : new Date(value);
         if (Number.isNaN(date.getTime())) return '—';
         return new Intl.DateTimeFormat('es-MX', {
-            dateStyle: 'medium',
             timeStyle: 'short'
         }).format(date);
     }

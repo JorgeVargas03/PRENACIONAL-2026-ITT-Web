@@ -96,7 +96,7 @@
                   </div>
                   <div class="flex items-center justify-between">
                     <span>Actualizado</span>
-                    <span class="text-slate-400">{{ formatDateTime(entry.updatedAt) }}</span>
+                    <span class="text-slate-400">{{ formatTime(entry.updatedAt) }}</span>
                   </div>
                   <div class="flex items-center gap-3">
                     <img *ngIf="getTechById(entry.techId)" [src]="getTechById(entry.techId)!.logoURL"
