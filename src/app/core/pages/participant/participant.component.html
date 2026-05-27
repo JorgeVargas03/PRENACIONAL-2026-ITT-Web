@@ -53,13 +53,17 @@
                     <ng-template ng-option-tmp let-item="item">
                       <div class="flex items-center gap-3">
                         <img [src]="item.logoURL" alt="" class="h-7 w-7 rounded-full" />
-                        <span class="text-sm text-slate-100" [title]="item.name">{{ shortTechLabel(item.name) }}</span>
+                        <span class="text-sm text-slate-100" [title]="item.name">
+                          {{ isMobile ? shortTechLabel(item.name) : item.name }}
+                        </span>
                       </div>
                     </ng-template>
                     <ng-template ng-label-tmp let-item="item">
                       <div class="flex min-w-0 items-center gap-2 overflow-hidden">
-                        <img [src]="item.logoURL" alt="" class="h-6 w-6 rounded-full" />
-                        <span class="truncate text-sm text-slate-100">{{ shortTechLabel(item.name) }}</span>
+                        <img [src]="item.logoURL" alt="" class="h-6 w-6 rounded-full sm:hidden" />
+                        <span class="truncate text-sm text-slate-100">
+                          {{ isMobile ? shortTechLabel(item.name) : item.name }}
+                        </span>
                       </div>
                     </ng-template>
                   </ng-select>

@@ -17,6 +17,7 @@ export class ParticipantComponent implements OnInit {
     watchId: number | null = null;
     participantId = '';
     private isBrowser = false;
+    isMobile = false;
     techOptions = TECH_CATALOG;
 
     participantData = {
@@ -41,6 +42,7 @@ export class ParticipantComponent implements OnInit {
 
     ngOnInit(): void {
         if (this.isBrowser) {
+            this.isMobile = window.matchMedia('(max-width: 640px)').matches;
             const savedId = localStorage.getItem('participantId');
             this.participantId = savedId || this.safeUuid();
 
