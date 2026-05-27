@@ -29,6 +29,28 @@
 	color: #f8fafc;
 }
 
+.ng-select.ng-select-custom .ng-value-container {
+	overflow: hidden;
+}
+
+.ng-select.ng-select-custom .ng-value {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+	.ng-select.ng-select-custom .ng-value-container {
+		justify-content: flex-start;
+		padding-left: 8px;
+	}
+
+	.ng-select.ng-select-custom .ng-value {
+		text-align: left;
+	}
+}
+
 .ng-select.ng-select-custom .ng-arrow-wrapper {
 	padding-right: 8px;
 }

@@ -214,6 +214,17 @@ export class ParticipantComponent implements OnInit {
         return this.status === 'sharing' || this.status === 'reconnecting' || this.sharingRequested;
     }
 
+    shortTechLabel(name: string) {
+        const cleaned = name
+            .replace(/^INSTITUTO\s+TECNOL[ÓO]GICO\s+DE\s+/i, 'Tec. ')
+            .replace(/^INSTITUTO\s+TECNOL[ÓO]GICO\s+/i, 'Tec. ')
+            .replace(/^TECNOL[ÓO]GICO\s+SUPERIOR\s+DE\s+/i, 'TS. ')
+            .replace(/^TECNOL[ÓO]GICO\s+DE\s+/i, 'Tec. ')
+            .trim();
+        if (cleaned.length <= 24) return cleaned;
+        return `${cleaned.slice(0, 21).trim()}...`;
+    }
+
     get isFormValid() {
         return !!this.participantData.tecId
             && this.participantData.encargado.trim().length > 0

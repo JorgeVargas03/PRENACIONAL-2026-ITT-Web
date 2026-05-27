@@ -3,7 +3,7 @@
     <div class="absolute -top-40 right-0 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"></div>
     <div class="absolute -bottom-40 left-0 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl"></div>
 
-    <div class="relative mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+    <div class="relative mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
       <header class="flex flex-col gap-4 border-b border-white/10 pb-6 md:flex-row md:items-end md:justify-between">
         <div>
           <p class="text-xs uppercase tracking-[0.35em] text-emerald-300/80">Modo Participante</p>
@@ -29,9 +29,9 @@
       </header>
 
       <div class="mt-6 grid gap-6 lg:grid-cols-12">
-        <section class="lg:col-span-7">
+        <section class="w-full lg:col-span-7">
           <div
-            class="rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-[0_20px_60px_-35px_rgba(0,0,0,0.9)]">
+            class="mx-auto w-full max-w-xl rounded-3xl border border-white/10 bg-slate-900/70 p-4 text-center shadow-[0_20px_60px_-35px_rgba(0,0,0,0.9)] sm:max-w-none sm:p-6 sm:text-left">
             <h2 class="text-lg font-semibold text-white">Datos del participante</h2>
             <p class="mt-1 text-xs text-slate-400">Se guardan en este dispositivo.</p>
 
@@ -40,7 +40,7 @@
                 Tecnologico
                 <div class="mt-2 flex items-center gap-3">
                   <ng-select
-                    class="ng-select-custom flex-1"
+                    class="ng-select-custom flex-1 min-w-0"
                     [items]="techOptions"
                     bindLabel="name"
                     bindValue="id"
@@ -53,17 +53,17 @@
                     <ng-template ng-option-tmp let-item="item">
                       <div class="flex items-center gap-3">
                         <img [src]="item.logoURL" alt="" class="h-7 w-7 rounded-full" />
-                        <span class="text-sm text-slate-100">{{ item.name }}</span>
+                        <span class="text-sm text-slate-100" [title]="item.name">{{ shortTechLabel(item.name) }}</span>
                       </div>
                     </ng-template>
                     <ng-template ng-label-tmp let-item="item">
-                      <div class="flex items-center gap-2">
+                      <div class="flex min-w-0 items-center gap-2 overflow-hidden">
                         <img [src]="item.logoURL" alt="" class="h-6 w-6 rounded-full" />
-                        <span class="text-sm text-slate-100">{{ item.name }}</span>
+                        <span class="truncate text-sm text-slate-100">{{ shortTechLabel(item.name) }}</span>
                       </div>
                     </ng-template>
                   </ng-select>
-                  <div *ngIf="SelectedTech" class="shrink-0 rounded-2xl border border-white/10 bg-white/5 px-2.5 py-2">
+                  <div *ngIf="SelectedTech" class="hidden shrink-0 rounded-2xl border border-white/10 bg-white/5 px-2.5 py-2 sm:flex">
                     <img [src]="SelectedTech.logoURL" alt="" class="h-8 w-8 rounded-full" />
                   </div>
                 </div>
@@ -106,12 +106,12 @@
           </div>
         </section>
 
-        <aside class="lg:col-span-5">
-          <div class="rounded-3xl border border-white/10 bg-slate-900/60 p-6">
+        <aside class="w-full lg:col-span-5">
+          <div class="mx-auto w-full max-w-xl rounded-3xl border border-white/10 bg-slate-900/60 p-4 text-center sm:max-w-none sm:p-6 sm:text-left">
             <h2 class="text-lg font-semibold text-white">Estado de ubicacion</h2>
             <p class="mt-1 text-xs text-slate-400">Seguimiento en tiempo real.</p>
 
-            <div class="mt-5 space-y-4">
+            <div class="mt-4 space-y-4 sm:mt-5">
               <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div class="text-xs uppercase tracking-wider text-slate-400">Ultima ubicacion</div>
                 <div *ngIf="lastPosition" class="mt-2 text-sm text-slate-200">
