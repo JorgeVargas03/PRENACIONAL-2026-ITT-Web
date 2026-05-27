@@ -266,6 +266,25 @@ export class ParticipantComponent implements OnInit, OnDestroy {
         return this.status === 'sharing' || this.status === 'reconnecting' || this.sharingRequested;
     }
 
+    get statusLabel() {
+        switch (this.status) {
+            case 'idle':
+                return 'Inactivo';
+            case 'sharing':
+                return 'Compartiendo';
+            case 'stopped':
+                return 'Detenido';
+            case 'denied':
+                return 'Permiso denegado';
+            case 'reconnecting':
+                return 'Reconectando';
+            case 'error':
+                return 'Error';
+            default:
+                return this.status;
+        }
+    }
+
     shortTechLabel(name: string) {
         const cleaned = name
             .replace(/^INSTITUTO\s+TECNOL[ÓO]GICO\s+DE\s+/i, 'Tec. ')
