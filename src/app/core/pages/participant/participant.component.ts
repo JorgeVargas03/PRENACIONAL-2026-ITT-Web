@@ -72,6 +72,7 @@ export class ParticipantComponent implements OnInit, OnDestroy {
                         this.status = 'error';
                         this.sharingRequested = false;
                         this.showShareOverlay = false;
+                        this.setBodyScrollLock(false);
                         this.hasFirstFix = false;
                         this.lastFixAt = 0;
                     });
@@ -132,6 +133,7 @@ export class ParticipantComponent implements OnInit, OnDestroy {
         if (!this.isFormValid) return;
         this.sharingRequested = true;
         this.showShareOverlay = this.isMobile;
+        this.setBodyScrollLock(this.showShareOverlay);
         this.hasFirstFix = false;
         this.lastFixAt = 0;
         this.ngZone.run(() => this.status = 'sharing');
@@ -142,6 +144,8 @@ export class ParticipantComponent implements OnInit, OnDestroy {
                 if (perm.state === 'denied') {
                     this.status = 'denied';
                     this.sharingRequested = false;
+                    this.showShareOverlay = false;
+                    this.setBodyScrollLock(false);
                     return;
                 }
             }
@@ -194,11 +198,13 @@ export class ParticipantComponent implements OnInit, OnDestroy {
                         this.status = 'denied';
                         this.sharingRequested = false;
                         this.showShareOverlay = false;
+                        this.setBodyScrollLock(false);
                         this.hasFirstFix = false;
                     } else {
                         this.status = 'error';
                         this.sharingRequested = false;
                         this.showShareOverlay = false;
+                        this.setBodyScrollLock(false);
                         this.hasFirstFix = false;
                         // schedule retry if we were sharing before the error
                         if (wasSharing) {
@@ -226,6 +232,7 @@ export class ParticipantComponent implements OnInit, OnDestroy {
         this.status = 'stopped';
         this.sharingRequested = false;
         this.showShareOverlay = false;
+        this.setBodyScrollLock(false);
         this.hasFirstFix = false;
         this.lastFixAt = 0;
     }
@@ -235,6 +242,12 @@ export class ParticipantComponent implements OnInit, OnDestroy {
             window.clearInterval(this.shareWatchdogId);
             this.shareWatchdogId = null;
         }
+        this.setBodyScrollLock(false);
+    }
+
+    private setBodyScrollLock(locked: boolean) {
+        if (!this.isBrowser) return;
+        document.body.style.overflow = locked ? 'hidden' : '';
     }
 
     private safeUuid() {
