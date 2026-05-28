@@ -190,3 +190,16 @@
 	border-bottom: none;
 }
 @import 'tailwindcss';
+
+/* Make interactive buttons show pointer cursor (except when disabled) */
+button:not(:disabled),
+input[type="button"]:not(:disabled),
+input[type="submit"]:not(:disabled),
+input[type="reset"]:not(:disabled) {
+	cursor: pointer;
+}
+
+/* Ensure elements with role=button also show pointer */
+[role="button"] {
+	cursor: pointer;
+}
