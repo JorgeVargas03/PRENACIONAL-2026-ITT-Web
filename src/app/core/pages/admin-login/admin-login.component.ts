@@ -1,4 +1,4 @@
-import { Component, NgZone } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,7 +20,8 @@ export class AdminLoginComponent {
     constructor(
         private auth: AdminAuthService,
         private router: Router,
-        private ngZone: NgZone
+        private ngZone: NgZone,
+        private cdr: ChangeDetectorRef
     ) {}
 
     togglePasswordVisibility() {
@@ -30,6 +31,7 @@ export class AdminLoginComponent {
     onSubmit() {
         if (!this.username.trim() || !this.password.trim()) {
             this.errorMessage = 'Completa usuario y contraseña.';
+            this.cdr.detectChanges();
             return;
         }
 
@@ -41,12 +43,14 @@ export class AdminLoginComponent {
                 this.ngZone.run(() => {
                     this.isLoading = false;
                     this.router.navigateByUrl('/admin', { replaceUrl: true });
+                    this.cdr.detectChanges();
                 });
             },
             error: () => {
                 this.ngZone.run(() => {
                     this.isLoading = false;
                     this.errorMessage = 'Credenciales incorrectas.';
+                    this.cdr.detectChanges();
                 });
             }
         });
