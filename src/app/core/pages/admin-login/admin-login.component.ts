@@ -22,17 +22,6 @@ export class AdminLoginComponent {
         private ngZone: NgZone
     ) {}
 
-    ngOnInit() {
-        this.auth.check().subscribe({
-            next: () => {
-                this.router.navigateByUrl('/admin');
-            },
-            error: () => {
-                // stay on login
-            }
-        });
-    }
-
     onSubmit() {
         if (!this.username.trim() || !this.password.trim()) {
             this.errorMessage = 'Completa usuario y contraseña.';
@@ -46,7 +35,7 @@ export class AdminLoginComponent {
             next: () => {
                 this.ngZone.run(() => {
                     this.isLoading = false;
-                    this.router.navigateByUrl('/admin');
+                    this.router.navigateByUrl('/admin', { replaceUrl: true });
                 });
             },
             error: () => {

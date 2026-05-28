@@ -1,8 +1,10 @@
 import { AfterViewInit, ApplicationRef, ChangeDetectorRef, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from "@angular/core";
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { SocketService } from "../../services/socket.service";
 import { TECH_BY_ID } from "../../types/tecType";
+import { AdminAuthService } from "../../services/admin-auth.service";
 
 @Component({
     selector: 'app-admin',
@@ -31,6 +33,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         private ngZone: NgZone,
         private cdr: ChangeDetectorRef,
         private appRef: ApplicationRef,
+        private auth: AdminAuthService,
+        private router: Router,
         @Inject(PLATFORM_ID) private platformId: Object
     ) { }
 
@@ -124,6 +128,16 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         } catch (e) {
             // ignore
         }
+    }
+
+    logout() {
+        this.auth.logout().subscribe({
+            next: () => this.router.navigateByUrl('/admin/login', { replaceUrl: true }),
+            error: () => {
+                this.auth.clearSession();
+                this.router.navigateByUrl('/admin/login', { replaceUrl: true });
+            }
+        });
     }
 
     getTechById(id: string | null | undefined) {
