@@ -13,6 +13,7 @@ import { AdminAuthService } from '../../services/admin-auth.service';
 export class AdminLoginComponent {
     username = '';
     password = '';
+    showPassword = false;
     isLoading = false;
     errorMessage = '';
 
@@ -21,6 +22,10 @@ export class AdminLoginComponent {
         private router: Router,
         private ngZone: NgZone
     ) {}
+
+    togglePasswordVisibility() {
+        this.showPassword = !this.showPassword;
+    }
 
     onSubmit() {
         if (!this.username.trim() || !this.password.trim()) {

@@ -37,14 +37,34 @@
           </label>
           <label class="text-xs uppercase tracking-wider text-slate-400">
             Contraseña
-            <input
-              [(ngModel)]="password"
-              name="password"
-              type="password"
-              class="admin-login-field mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-rose-300/50 focus:ring-2 focus:ring-rose-300/30"
-              placeholder="Contraseña"
-              autocomplete="current-password"
-            />
+            <div class="relative mt-2">
+              <input
+                [(ngModel)]="password"
+                name="password"
+                [type]="showPassword ? 'text' : 'password'"
+                class="admin-login-field w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-4 pr-12 text-sm text-white outline-none transition focus:border-rose-300/50 focus:ring-2 focus:ring-rose-300/30"
+                placeholder="Contraseña"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                [attr.title]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                class="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-300 transition hover:bg-white/10 hover:text-white"
+              >
+                <svg *ngIf="!showPassword" viewBox="0 0 24 24" aria-hidden="true" class="h-5 w-5 fill-none stroke-current stroke-[1.8]">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <svg *ngIf="showPassword" viewBox="0 0 24 24" aria-hidden="true" class="h-5 w-5 fill-none stroke-current stroke-[1.8]">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6 0 9.5 7 9.5 7a16.4 16.4 0 0 1-4.2 4.7" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.1 6.1A16 16 0 0 0 2.5 12s3.5 7 9.5 7a9.7 9.7 0 0 0 2.8-.4" />
+                </svg>
+              </button>
+            </div>
           </label>
 
           <p *ngIf="errorMessage" class="rounded-2xl border border-rose-400/40 bg-rose-500/10 px-4 py-2 text-sm text-rose-200">
