@@ -1,6 +1,7 @@
 import { Inject, Injectable, PLATFORM_ID } from "@angular/core";
 import { isPlatformBrowser } from '@angular/common';
 import { io, Socket } from 'socket.io-client';
+import { enviroment } from "../../../environment/environment";
 
 @Injectable({
     providedIn: 'root'
@@ -10,8 +11,7 @@ export class SocketService {
 
     private socket?: Socket;
     private isBrowser: boolean;
-    private API_URL: string = 'https://prenacional-2026-itt-api.onrender.com';
-    //private API_URL: string = 'http://localhost:3000';
+    private API_URL: string = enviroment.apiURL;
 
     constructor(@Inject(PLATFORM_ID) platformId: Object) {
         this.isBrowser = isPlatformBrowser(platformId);

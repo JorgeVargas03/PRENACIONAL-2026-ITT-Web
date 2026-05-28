@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { enviroment } from '../../../environment/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AdminAuthService {
-    private API_URL = 'https://prenacional-2026-itt-api.onrender.com';
+    private API_URL = enviroment.apiURL;
 
     constructor(private http: HttpClient) {}
 
