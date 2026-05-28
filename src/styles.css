@@ -203,3 +203,19 @@ input[type="reset"]:not(:disabled) {
 [role="button"] {
 	cursor: pointer;
 }
+
+input.admin-login-field:-webkit-autofill,
+input.admin-login-field:-webkit-autofill:hover,
+input.admin-login-field:-webkit-autofill:focus,
+input.admin-login-field:-webkit-autofill:active {
+	-webkit-box-shadow: 0 0 0 1000px rgba(15, 23, 42, 0.92) inset !important;
+	box-shadow: 0 0 0 1000px rgba(15, 23, 42, 0.92) inset !important;
+	-webkit-text-fill-color: #e2e8f0 !important;
+	caret-color: #5eead4;
+	transition: background-color 9999s ease-out 0s;
+}
+
+input.admin-login-field::selection {
+	background: rgba(94, 234, 212, 0.28);
+	color: #f8fafc;
+}
